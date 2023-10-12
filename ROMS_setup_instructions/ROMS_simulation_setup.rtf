@@ -1,0 +1,465 @@
+{\rtf1\ansi\ansicpg1252\cocoartf2709
+\cocoatextscaling0\cocoaplatform0{\fonttbl\f0\fswiss\fcharset0 Helvetica-Bold;\f1\fswiss\fcharset0 Helvetica;}
+{\colortbl;\red255\green255\blue255;\red251\green0\blue7;\red0\green0\blue0;\red251\green0\blue7;
+}
+{\*\expandedcolortbl;;\cssrgb\c100000\c12195\c0;\cssrgb\c0\c0\c0;\cssrgb\c100000\c12195\c0;
+}
+\margl1440\margr1440\vieww17400\viewh14940\viewkind0
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 \ul \ulc0 SETTING UP A S2R SIMULATION
+\fs24 \
+
+\f1\b0 \ulnone \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf2 1.Make_grid
+\f1\b0 \cf2  \cf0 \
+	SUMMARY:  \'93easy.m\'94 is a simple GUI that makes only one type of grid (rotated, translated Mercator projection, the simplest homogeneous isotropic grid on a sphere). This script also uses etopo5.nc to make a  \'93raw\'94 bathymetry.\
+\
+	STEPS:  	1) run \'93easy\'94 from MATLAB command line\
+			2) Use GUI to decide on grid size and placement\
+			3) Saves as \'93roms_grd.nc\'94\
+\
+	OPTIONS:  Can edit easy.m to use "gshhs_?", where ? can be f, h, i ,l ,or c (in order of decreasing resolution).  Higher resolution takes a longer time to render.\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf2 2.Make_topo
+\f1\b0 \cf0 \
+	SUMMARY:  Edit topography and make land mask.  The editing step uses a Gaussian kernel with 8x grid resolution to filter bathymetry and make sure it is smooth at the grid scale for the ROMS sigma coordinate.\
+\
+	STEPS:	1) In \'93topo.m\'94 tell it which grid to use and select bathymetry dataset (default: "srtm15")\
+			2) Run \'93topo\'94 on MATLAB command line\
+			3) In \'93fill_holes.m\'94 tell it which grid to use\
+			4) Run "fill_holes" on MATLAB command line\
+			5) In "make_h.m" tell it which grid to use\
+			6) Run "make_h" on MATLAB command line\
+\
+	NOTES: (delta_h / H = rmax) should be small - keep at 0.2.  Need to make sure tidal excursion does not exceed the water depth - there is currently no wetting / drying, so the model will crash if water level goes negative. Set hmin to be something reasonably above 0 (default = 5).\
+\
+\
+
+\f0\b \cf2 3.Make_tides
+\f1\b0 \cf0 \
+	SUMMARY:  Make the tidal forcing\
+\
+	STEPS:	1) In \'93make_frc_tides.m\'94 tell it which grid to use and choose the name of the output file\
+			2) Run "make_frc_tides" on MATLAB command line\
+\
+\
+
+\f0\b \cf2 4.Make_atm_forcing
+\f1\b0 \cf0 \
+	SUMMARY: Make the atmospheric forcing using ERA5\
+\
+	STEPS:	1) In "fill_frc_era.m" tell it which grid to use and choose the dates over which to make forcing\
+			2) Run "fill_frc_era" on MATLAB command line\
+\
+	NOTES: Selecting "coarse_frc" makes a coarsened version of the forcing files, saving disk space.  When compiling the model you must set the grid size and partitioning so that each tile has an even number of points!\
+\
+\
+
+\f0\b \cf2 5.Make_initial_conditions
+\f1\b0 \cf0 \
+	SUMMARY: Make the initial conditions using GLORYS data\
+\
+	STEPS:	1) In "make_s2r_ini.m" tell it which grid to use, choose the parameters of the sigma coordinate, and point to the GLORYS file that should be used to make the initial conditions\
+			2) Run "make_s2r_ini" on MATLAB command line\
+\
+\
+
+\f0\b \cf2 6.Make_boundary_forcing
+\f1\b0 \cf0 \
+	SUMMARY: Make the boundary forcing using GLORYS data\
+\
+	STEPS:	1) In "make_s2r_bry.m" tell it which grid to use, choose the parameters of the sigma coordinate, and point to the GLORYS file that should be used to make the initial conditions\
+			2) Run "make_s2r_bry" on MATLAB command line\
+\
+	NOTES: The sigma coordinate parameters must be consistent with those used in Step 5!\
+\
+\
+
+\f0\b \cf2 7.Make_child_boundaries (OPTIONAL)
+\f1\b0 \cf0 \
+	SUMMARY:  Create NetCDF file to save boundary data for a child model that will be nested inside this domain\
+\
+	STEPS: 	1) In "bry_extract_obj.m", tell it the path to the parent and child grids, select which open boundaries to save, and the frequency at which to save data\
+			2) Run "bry_extract_obj" on MATLAB command line\
+\
+\
+8. Move all .opt files, code modifications, and Makefile into $ROMS_ROOT/Work and \'93make\'94\
+\
+9. Move all input files from Steps 1-6 into $ROMS_ROOT/Work/INPUT directory\
+\
+9.  Use Tools-ROMS/partit on all input files\
+		USAGE FROM RUNDIR:   ../../Tools-ROMS/partit -NX -NP  *.nc\
+			NX and NP are in $ROMS_ROOT/Work/params.opt\
+\
+10. Copy the ROMS executable from Step 8, the shell submission script, the _edata.nc file from Step 7, and (your_runname).in into $ROMS_ROOT/run/(your_rundir)\
+\
+11. Edit (your_runname).in to point to all of the input files in $ROMS_ROOT/Work/INPUT\
+\
+12. Run simulation\
+\
+\
+\
+\
+\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 \ul \ulc0 SETTING UP A S2R SIMULATION WITH BGC
+\fs24 \
+
+\f1\b0 \ulnone \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf4 1.Make_grid
+\f1\b0 \cf4  \cf0 \
+	SUMMARY:  \'93easy.m\'94 is a simple GUI that makes only one type of grid (rotated, translated Mercator projection, the simplest homogeneous isotropic grid on a sphere). This script also uses etopo5.nc to make a  \'93raw\'94 bathymetry.\
+\
+	STEPS:  	1) run \'93easy\'94 from MATLAB command line\
+			2) Use GUI to decide on grid size and placement\
+			3) Saves as \'93roms_grd.nc\'94\
+\
+	OPTIONS:  Can edit easy.m to use "gshhs_?", where ? can be f, h, i ,l ,or c (in order of decreasing resolution).  Higher resolution takes a longer time to render.\
+\
+\
+
+\f0\b \cf4 2.Make_topo
+\f1\b0 \cf0 \
+	SUMMARY:  Edit topography and make land mask.  The editing step uses a Gaussian kernel with 8x grid resolution to filter bathymetry and make sure it is smooth at the grid scale for the ROMS sigma coordinate.\
+\
+	STEPS:	1) In \'93topo.m\'94 tell it which grid to use and select bathymetry dataset (default: "srtm15")\
+			2) Run \'93topo\'94 on MATLAB command line\
+			3) In \'93fill_holes.m\'94 tell it which grid to use\
+			4) Run "fill_holes" on MATLAB command line\
+			5) In "make_h.m" tell it which grid to use\
+			6) Run "make_h" on MATLAB command line\
+\
+	NOTES: (delta_h / H = rmax) should be small - keep at 0.2.  Need to make sure tidal excursion does not exceed the water depth - there is currently no wetting / drying, so the model will crash if water level goes negative. Set hmin to be something reasonably above 0 (default = 5).\
+\
+\
+
+\f0\b \cf4 3.Make_tides
+\f1\b0 \cf0 \
+	SUMMARY:  Make the tidal forcing\
+\
+	STEPS:	1) In \'93make_frc_tides.m\'94 tell it which grid to use and choose the name of the output file\
+			2) Run "make_frc_tides" on MATLAB command line\
+\
+\
+
+\f0\b \cf4 4.Make_atm_forcing
+\f1\b0 \cf0 \
+	SUMMARY: Make the atmospheric forcing using ERA5\
+\
+	STEPS:	1) In "fill_frc_era.m" tell it which grid to use and choose the dates over which to make forcing\
+			2) Run "fill_frc_era" on MATLAB command line\
+\
+	NOTES: Selecting "coarse_frc" makes a coarsened version of the forcing files, saving disk space.  When compiling the model you must set the grid size and partitioning so that each tile has an even number of points!\
+\
+\
+
+\f0\b \cf4 5.Make_initial_conditions
+\f1\b0 \cf0 \
+	SUMMARY: Make the initial conditions using GLORYS data\
+\
+	STEPS:	1) In "make_s2r_ini.m" tell it which grid to use, choose the parameters of the sigma coordinate, and point to the GLORYS file that should be used to make the initial conditions\
+			2) Run "make_s2r_ini" on MATLAB command line\
+\
+\
+
+\f0\b \cf4 6.Make_boundary_forcing
+\f1\b0 \cf0 \
+	SUMMARY: Make the boundary forcing using GLORYS data\
+\
+	STEPS:	1) In "make_s2r_bry.m" tell it which grid to use, choose the parameters of the sigma coordinate, and point to the GLORYS file that should be used to make the initial conditions\
+			2) Run "make_s2r_bry" on MATLAB command line\
+\
+	NOTES: The sigma coordinate parameters must be consistent with those used in Step 5!\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf2 7.Make_atm_forcing_BGC
+\f1\b0 \cf0 \
+	SUMMARY:  Set up the atmospheric forcing for dust, iron, and pCO2\
+\
+	STEPS:	1) In "make_frcBGC.m" tell it the path to the grid file\
+			2) Run "make_frcBGC" on MATLAB command line\
+\
+	NOTES: Make sure the year range in "correction_on_FRCtime.m" matches the range in "make_frcBGC.m".\
+\
+
+\f0\b \cf2 8.Make_initial_conditions_BGC
+\f1\b0 \cf0 \
+	SUMMMARY:  Set up the initial conditions for the BGC variables.\
+\
+	STEPS:	1) In "make_s2r_ini_GlorysBGC.m" tell it the path to the grid file\
+			2) Run "make_s2r_ini_GlorysBGC" on MATLAB command line\
+\
+	NOTE: This will add the BGC variables onto the existing "ini" file from Step 5.\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf2 9.Make_boundary_forcing_BGC
+\f1\b0 \cf0 \
+	SUMMMARY:  Set up the open boundary conditions for the BGC variables.\
+\
+	STEPS:	1) In "make_s2r_bry_GlorysBGC.m" tell it the path to the grid file\
+			2) Run "make_s2r_bryGlorysBGC" on MATLAB command line\
+\
+	NOTE: This will add the BGC variables onto the existing "bry" file from Step 6.\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf4 10.Make_child_boundaries (OPTIONAL)
+\f1\b0 \cf0 \
+	SUMMARY:  Create NetCDF file to save boundary data for a child model that will be nested inside this domain\
+\
+	STEPS: 	1) In "bry_extract_obj.m" tell it the path to the parent and child grids, select which open boundaries to save, and the frequency at which to save data\
+			2) Run "bry_extract_obj" on MATLAB command line\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+11. Move all .opt files, code modifications, and Makefile into $ROMS_ROOT/Work and \'93make\'94\
+\
+12. Move all input files from Steps 1-9 into $ROMS_ROOT/Work/INPUT directory\
+\
+13.  Use Tools-ROMS/partit on all input files\
+		USAGE FROM RUNDIR:   ../../Tools-ROMS/partit -NX -NP  *.nc\
+			NX and NP are in $ROMS_ROOT/Work/params.opt\
+\
+14. Copy the ROMS executable from Step 11, the shell submission script, the _edata.nc file from Step 11, and (your_runname).in into $ROMS_ROOT/run/(your_rundir)\
+\
+15. Edit (your_runname).in to point to all of the input files in $ROMS_ROOT/Work/INPUT\
+\
+16. Run simulation\
+\
+\
+\
+
+\f0\b\fs36 \ul SETTING UP A R2R SIMULATION
+\fs24 \
+
+\f1\b0 \ulnone \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf4 1.Make_grid
+\f1\b0 \cf4  \cf0 \
+	SUMMARY:  \'93easy.m\'94 is a simple GUI that makes only one type of grid (rotated, translated Mercator projection, the simplest homogeneous isotropic grid on a sphere). This script also uses etopo5.nc to make a  \'93raw\'94 bathymetry.\
+\
+	STEPS:  	1) run \'93easy\'94 from MATLAB command line\
+			2) Use GUI to decide on grid size and placement\
+			3) Saves as \'93roms_grd.nc\'94\
+\
+	OPTIONS:  Can edit easy.m to use "gshhs_?", where ? can be f, h, i ,l ,or c (in order of decreasing resolution).  Higher resolution takes a longer time to render.\
+\
+\
+
+\f0\b \cf4 2.Make_topo
+\f1\b0 \cf0 \
+	SUMMARY:  Edit topography and make land mask.  The editing step uses a Gaussian kernel with 8x grid resolution to filter bathymetry and make sure it is smooth at the grid scale for the ROMS sigma coordinate.\
+\
+	STEPS:	1) In \'93topo.m\'94 tell it which grid to use and select bathymetry dataset (default: "srtm15")\
+			2) Run \'93topo\'94 on MATLAB command line\
+			3) In \'93fill_holes.m\'94 tell it which grid to use\
+			4) Run "fill_holes" on MATLAB command line\
+			5) In "make_h.m" tell it which grid to use\
+			6) Run "make_h" on MATLAB command line\
+\
+	NOTES: (delta_h / H = rmax) should be small - keep at 0.2.  Need to make sure tidal excursion does not exceed the water depth - there is currently no wetting / drying, so the model will crash if water level goes negative. Set hmin to be something reasonably above 0 (default = 5).\
+\
+\
+
+\f0\b \cf4 3.Make_tides
+\f1\b0 \cf0 \
+	SUMMARY:  Make the tidal forcing\
+\
+	STEPS:	1) In \'93make_frc_tides.m\'94 tell it which grid to use and choose the name of the output file\
+			2) Run "make_frc_tides" on MATLAB command line\
+\
+\
+
+\f0\b \cf4 4.Make_atm_forcing
+\f1\b0 \cf0 \
+	SUMMARY: Make the atmospheric forcing using ERA5\
+\
+	STEPS:	1) In "fill_frc_era.m" tell it which grid to use and choose the dates over which to make forcing\
+			2) Run "fill_frc_era" on MATLAB command line\
+\
+	NOTES: Selecting "coarse_frc" makes a coarsened version of the forcing files, saving disk space.  When compiling the model you must set the grid size and partitioning so that each tile has an even number of points!\
+\
+\
+
+\f0\b \cf4 5.Make_initial_conditions
+\f1\b0 \cf0 \
+	SUMMARY: Make the initial conditions using data from parent model\
+\
+	STEPS:	1) In "make_r2r_ini.m" tell it which grid to use, choose the parameters of the sigma coordinate, and point to the parent restart file that should be used to make the initial conditions\
+			2) Run "make_r2r_ini" on MATLAB command line\
+\
+\
+
+\f0\b \cf4 6.Make_boundary_forcing
+\f1\b0 \cf0 \
+	SUMMARY: Make the boundary forcing using data from parent model\
+\
+	STEPS:	1) From $ROMS_TOOLS/postprocessing copy "extract_bry_join_driver.py" and "run_extract_bry_join.sh" into run directory of parent model\
+			2) Submit "run_extract_bry_join.sh" using job scheduler (i.e. qsub)\
+\
+	NOTES: The sigma coordinate parameters must be consistent with those used in Step 5!\
+\
+\
+
+\f0\b \cf4 7.Make_child_boundaries (OPTIONAL)
+\f1\b0 \cf0 \
+	SUMMARY:  Create NetCDF file to save boundary data for a child model that will be nested inside this domain\
+\
+	STEPS: 	1) In "bry_extract_obj.m", tell it the path to the parent and child grids, select which open boundaries to save, and the frequency at which to save data\
+			2) Run "bry_extract_obj" on MATLAB command line\
+\
+\
+8. Move all .opt files, code modifications, and Makefile into $ROMS_ROOT/Work and \'93make\'94\
+\
+9. Move all input files from Steps 1-6 into $ROMS_ROOT/Work/INPUT directory (the "_bry.nc" file for this run, which was created in Step 6, is in the parent run directory)\
+\
+9.  Use Tools-ROMS/partit on all input files\
+		USAGE FROM RUNDIR:   ../../Tools-ROMS/partit -NX -NP  *.nc\
+			NX and NP are in $ROMS_ROOT/Work/params.opt\
+\
+10. Copy the ROMS executable from Step 8, the shell submission script, the _edata.nc file from Step 7, and (your_runname).in into $ROMS_ROOT/run/(your_rundir)\
+\
+11. Edit (your_runname).in to point to all of the input files in $ROMS_ROOT/Work/INPUT\
+\
+12. Run simulation\
+\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b\fs36 \cf0 \ul SETTING UP A R2R SIMULATION WITH BGC
+\fs24 \
+
+\f1\b0 \ulnone \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf4 1.Make_grid
+\f1\b0 \cf4  \cf0 \
+	SUMMARY:  \'93easy.m\'94 is a simple GUI that makes only one type of grid (rotated, translated Mercator projection, the simplest homogeneous isotropic grid on a sphere). This script also uses etopo5.nc to make a  \'93raw\'94 bathymetry.\
+\
+	STEPS:  	1) run \'93easy\'94 from MATLAB command line\
+			2) Use GUI to decide on grid size and placement\
+			3) Saves as \'93roms_grd.nc\'94\
+\
+	OPTIONS:  Can edit easy.m to use "gshhs_?", where ? can be f, h, i ,l ,or c (in order of decreasing resolution).  Higher resolution takes a longer time to render.\
+\
+\
+
+\f0\b \cf4 2.Make_topo
+\f1\b0 \cf0 \
+	SUMMARY:  Edit topography and make land mask.  The editing step uses a Gaussian kernel with 8x grid resolution to filter bathymetry and make sure it is smooth at the grid scale for the ROMS sigma coordinate.\
+\
+	STEPS:	1) In \'93topo.m\'94 tell it which grid to use and select bathymetry dataset (default: "srtm15")\
+			2) Run \'93topo\'94 on MATLAB command line\
+			3) In \'93fill_holes.m\'94 tell it which grid to use\
+			4) Run "fill_holes" on MATLAB command line\
+			5) In "make_h.m" tell it which grid to use\
+			6) Run "make_h" on MATLAB command line\
+\
+	NOTES: (delta_h / H = rmax) should be small - keep at 0.2.  Need to make sure tidal excursion does not exceed the water depth - there is currently no wetting / drying, so the model will crash if water level goes negative. Set hmin to be something reasonably above 0 (default = 5).\
+\
+\
+
+\f0\b \cf4 3.Make_tides
+\f1\b0 \cf0 \
+	SUMMARY:  Make the tidal forcing\
+\
+	STEPS:	1) In \'93make_frc_tides.m\'94 tell it which grid to use and choose the name of the output file\
+			2) Run "make_frc_tides" on MATLAB command line\
+\
+\
+
+\f0\b \cf4 4.Make_atm_forcing
+\f1\b0 \cf0 \
+	SUMMARY: Make the atmospheric forcing using ERA5\
+\
+	STEPS:	1) In "fill_frc_era.m" tell it which grid to use and choose the dates over which to make forcing\
+			2) Run "fill_frc_era" on MATLAB command line\
+\
+	NOTES: Selecting "coarse_frc" makes a coarsened version of the forcing files, saving disk space.  When compiling the model you must set the grid size and partitioning so that each tile has an even number of points!\
+\
+\
+
+\f0\b \cf4 5.Make_initial_conditions
+\f1\b0 \cf0 \
+	SUMMARY: Make the initial conditions using data from parent model\
+\
+	STEPS:	1) In "make_r2r_ini.m" tell it which grid to use, choose the parameters of the sigma coordinate, and point to the parent restart file that should be used to make the initial conditions\
+			2) Run "make_r2r_ini" on MATLAB command line\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf4 6.Make_atm_forcing_BGC
+\f1\b0 \cf0 \
+	SUMMARY:  Set up the atmospheric forcing for dust, iron, and pCO2\
+\
+	STEPS:	1) In "make_frcBGC.m" tell it the path to the grid file\
+			2) Run "make_frcBGC" on MATLAB command line\
+\
+	NOTES: Make sure the year range in "correction_on_FRCtime.m" matches the range in "make_frcBGC.m".\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf4 7.Make_child_boundaries (OPTIONAL)
+\f1\b0 \cf0 \
+	SUMMARY:  Create NetCDF file to save boundary data for a child model that will be nested inside this domain\
+\
+	STEPS: 	1) In "bry_extract_obj.m", tell it the path to the parent and child grids, select which open boundaries to save, and the frequency at which to save data\
+			2) Run "bry_extract_obj" on MATLAB command line\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+
+\f0\b \cf4 8.Make_boundary_forcing
+\f1\b0 \cf0 \
+	SUMMARY: Make the boundary forcing using data from parent model\
+\
+	STEPS:	1) From $ROMS_TOOLS/postprocessing copy "extract_bry_join_driver.py" and "run_extract_bry_join.sh" into run directory of parent model\
+			2) Submit "run_extract_bry_join.sh" using job scheduler (i.e. qsub)\
+\
+	NOTES: The sigma coordinate parameters must be consistent with those used in Step 5!\
+\
+9. Move all .opt files, code modifications, and Makefile into $ROMS_ROOT/Work and \'93make\'94\
+\
+10. Move all input files from Steps 1-6 into $ROMS_ROOT/Work/INPUT directory (the "_bry.nc" file for this run, which was created in Step 8, is in the parent run directory)\
+\
+11.  Use Tools-ROMS/partit on all input files\
+		USAGE FROM RUNDIR:   ../../Tools-ROMS/partit -NX -NP  *.nc\
+			NX and NP are in $ROMS_ROOT/Work/params.opt\
+\
+12. Copy the ROMS executable from Step 9, the shell submission script, the _edata.nc file from Step 7, and (your_runname).in into $ROMS_ROOT/run/(your_rundir)\
+\
+13. Edit (your_runname).in to point to all of the input files in $ROMS_ROOT/Work/INPUT\
+\
+14. Run simulation\
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+\
+\
+\pard\tx720\tx1440\tx2160\tx2880\tx3600\tx4320\tx5040\tx5760\tx6480\tx7200\tx7920\tx8640\pardirnatural\partightenfactor0
+\cf0 \
+}
