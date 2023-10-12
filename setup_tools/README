@@ -1,0 +1,2 @@
+These are MATLAB-based tools for setting up various types of UCLA-ROMS simulations.  Note that they are currently configured
+to use GLORYS, ERA5, and TPXO data, which the user will have to download elsewhere.
