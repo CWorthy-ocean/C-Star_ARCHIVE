@@ -135,7 +135,7 @@ add_rivers   = 0; % Adds river runoff as additional precipitation
    datname = [frc_dir eralist(1).name];
 
    lon_frc = ncread(datname,'longitude');
-   lon_frc(lon_frc < 0) = lon_frc(lon_frc < 0) + 360;   % ERA5 forcing data is in the 0 to 360 longitude range
+   lon_frc(lon_frc <= 0) = lon_frc(lon_frc <= 0) + 360;   % ERA5 forcing data is in the 0 to 360 longitude range
    lat_frc = ncread(datname,'latitude');
 
    i0 = find(lon_frc<lon0,1,'last');
