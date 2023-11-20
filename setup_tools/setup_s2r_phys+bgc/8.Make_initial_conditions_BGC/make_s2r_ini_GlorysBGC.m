@@ -46,7 +46,7 @@ elseif strcmp(SOURCE,'Glorys')
 end
 %%%%%
     % ROMS info
-     romsdir    = '/glade/scratch/bachman/ROMS_tools/Iceland0_BGC2/1.Make_grid/';
+     romsdir    = '/glade/derecho/scratch/bachman/C-Star/setup_tools/setup_s2r_phys+bgc/1.Make_grid/';
      grdname    = [romsdir 'Iceland0_grd.nc'];
      ininame    = [romsdir 'Iceland0_ini.nc'];
 
@@ -71,27 +71,35 @@ end
     BGC_INI.data_Takahashi = 1 ; BGC_INI.tracer_Takahashi = [30] ;
     % if a data file is added , edit s2rhv_inbgc and create a new get_bgc_data.m file
     %                      /glade/scratch/bachman/ROMS_tools/code/BGC/forcings
-    BGC_INI.file_bgc{1} = '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/woa13_all_n_annual_landfilled.nc' ;   % '/data/project1/data/WOA18/Nitrate/woa18_all_n*nc';
-    BGC_INI.file_bgc{2} = '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/woa13_all_o_seasonal_landfilled.nc' ;  %'/data/project1/data/WOA18/Oxygen/woa18_all_o*nc';
-    BGC_INI.file_bgc{3} = '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/woa13_all_p_annual_landfilled.nc' ; %'/data/project1/data/WOA18/Phosphate/woa18_all_p*nc';
-    BGC_INI.file_bgc{4} = '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/woa13_all_i_seasonal_landfilled.nc'; %'/data/project1/data/WOA18/Silicate/woa18_all_i*nc';
-    BGC_INI.file_bgc{5} = '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/ETHZ_L1_46.1k_Anth_Mon.pop.h.1958-2006_Fe_1981-2000_Feymonavg_rename_add_time_dimvar.nc';
-    BGC_INI.file_bgc{6} = '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/n2ofromnn.nc' ;
-    BGC_INI.file_bgc{7} = '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/GLODAPv2.2016b.TCO2.nc' ;
-    BGC_INI.file_bgc{8} = '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/GLODAPv2.2016b.TAlk.nc' ;
-    BGC_INI.file_bgc{9} = '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/SeaWiFS_CHL_MO_climatology_9km_landfill.nc';
-    BGC_INI.file_bgc{10}= '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/n2o_satn2o_sat_mon_mmolpm3_fromWOA13_landfill.nc' ;
-    BGC_INI.file_bgc{11}= '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/dpco2_climatology_T09_rev_landfill.nc';
-    BGC_INI.file_bgc{12}= '/glade/scratch/bachman/ROMS_tools/DATASETS/BGC/pacmed_0p25_ini2000_5daysAVGsoda.nc';
+    BGC_INI.file_bgc{1} = '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/woa13_all_n_annual_landfilled.nc' ;   % '/data/project1/data/WOA18/Nitrate/woa18_all_n*nc';
+    BGC_INI.file_bgc{2} = '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/woa13_all_o_seasonal_landfilled.nc' ;  %'/data/project1/data/WOA18/Oxygen/woa18_all_o*nc';
+    BGC_INI.file_bgc{3} = '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/woa13_all_p_annual_landfilled.nc' ; %'/data/project1/data/WOA18/Phosphate/woa18_all_p*nc';
+    BGC_INI.file_bgc{4} = '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/woa13_all_i_seasonal_landfilled.nc'; %'/data/project1/data/WOA18/Silicate/woa18_all_i*nc';
+    BGC_INI.file_bgc{5} = '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/ETHZ_L1_46.1k_Anth_Mon.pop.h.1958-2006_Fe_1981-2000_Feymonavg_rename_add_time_dimvar.nc';
+    BGC_INI.file_bgc{6} = '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/n2ofromnn.nc' ;
+    BGC_INI.file_bgc{7} = '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/GLODAPv2.2016b.TCO2.nc' ;
+    BGC_INI.file_bgc{8} = '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/GLODAPv2.2016b.TAlk.nc' ;
+    BGC_INI.file_bgc{9} = '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/SeaWiFS_CHL_MO_climatology_9km_landfill.nc';
+    BGC_INI.file_bgc{10}= '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/n2o_satn2o_sat_mon_mmolpm3_fromWOA13_landfill.nc' ;
+    BGC_INI.file_bgc{11}= '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/dpco2_climatology_T09_rev_landfill.nc';
+    BGC_INI.file_bgc{12}= '/glade/derecho/scratch/bachman/ROMS_tools/DATASETS/BGC/pacmed_0p25_ini2000_5daysAVGsoda.nc';
     %
     BGC_INI.bgc_tracer = {'NO3','PO4','SiO3','Fe','O2','CHLA', ...
                   'SPC','SPCHL','SPFE','SPCACO3', ...
                   'DIATC','DIATCHL','DIATFE','DIATSI',...
                   'DIAZC','DIAZCHL','DIAZFE', ...
-                  'DIC_glodap','Alk_glodap','ZOOC', ...
+                  'DIC','Alk','ZOOC', ...
                   'DON','DONR','DOP','DOPR','DOFE'...
-                  'N2O', 'N2O_SIDEN', 'N2O_ATM', 'N2O_NEV','pCO2','basindx', ...
-                  'DIC','Alk'}; % +PIC+CHL
+                  'N2O', 'N2O_SIDEN', 'N2O_ATM', 'N2O_NEV','pCO2','basindx'};
+
+		 %{'NO3','PO4','SiO3','Fe','O2','CHLA', ...
+                 % 'SPC','SPCHL','SPFE','SPCACO3', ...
+                 % 'DIATC','DIATCHL','DIATFE','DIATSI',...
+                 % 'DIAZC','DIAZCHL','DIAZFE', ...
+                 % 'DIC_glodap','Alk_glodap','ZOOC', ...
+                 % 'DON','DONR','DOP','DOPR','DOFE'...
+                 % 'N2O', 'N2O_SIDEN', 'N2O_ATM', 'N2O_NEV','pCO2','basindx'}; %, ...
+                 % 'DIC','Alk'}; % +PIC+CHL
     %  files to put in : 'i': ini/frc-file,
     %                    'v', value ,
     %                    'b' , build from other variables (_{Variable number})
