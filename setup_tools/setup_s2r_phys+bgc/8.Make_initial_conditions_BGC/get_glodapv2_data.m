@@ -5,10 +5,10 @@ function [var,zi,loni,lati] = get_glodapv2_data(glodapv2_file,variable,month,lon
 
 %%%% FIND the file to be read %%%%%%
   infile = glodapv2_file ;
-  disp(['get_glodapv2 : reading file : ' infile])  
-  
+  disp(['get_glodapv2 : reading file : ' infile])
+
 %%%% read lon/lat %%%%%%
-  loni = ncread(infile,'lon')'; 
+  loni = ncread(infile,'lon')';
   disp('WARNING : special fix on longitude')
 %   loni = [loni(181:end) loni(1:180)+360];
   lati = ncread(infile,'lat')';
@@ -22,7 +22,7 @@ function [var,zi,loni,lati] = get_glodapv2_data(glodapv2_file,variable,month,lon
 % error
   loni = loni(j0:j1,i0:i1);
   lati = lati(j0:j1,i0:i1);
-  
+
   lev = ncread(infile,'Depth')';
   nz = length(lev);
 % [month j0 j1 i0 i1]
@@ -31,18 +31,20 @@ function [var,zi,loni,lati] = get_glodapv2_data(glodapv2_file,variable,month,lon
   for k = 1:nz
     zi(k,:,:) = -lev(k);
   end
-  
-  if strcmp(variable,'DIC_glodap')==1
+
+%  if strcmp(variable,'DIC_glodap')==1
+if strcmp(variable,'DIC')==1
       name='TCO2'; factor = 1.0 ;
-  elseif strcmp(variable,'Alk_glodap')==1
+%  elseif strcmp(variable,'Alk_glodap')==1
+elseif strcmp(variable,'Alk')==1
       name='TAlk'; factor = 1.0 ;
   else
       name=variable; factor = 1.0 ;
   end
-  
+
   var = permute(squeeze(ncread(infile,name)),[3 2 1]);
   var = var(:,j0:j1,i0:i1)*factor ;
- 
+
   disp('WARNING : fix for woa : bottom')
   for i=1:i1-i0+1
   for j=1:j1-j0+1
@@ -52,10 +54,10 @@ function [var,zi,loni,lati] = get_glodapv2_data(glodapv2_file,variable,month,lon
       end
   end
   end
-  var(isnan(var))=0;  
-  
-  
-disp('WARNING : return vertical in the ascending order') 
+  var(isnan(var))=0;
+
+
+disp('WARNING : return vertical in the ascending order')
 for k=1:nz
     var_new (k,:,:) = var (nz-k+1,:,:) ;
     zi_new  (k,:,:) = zi  (nz-k+1,:,:) ;
@@ -72,4 +74,4 @@ end
 % error('testing get soda data')
 
 
-   
+

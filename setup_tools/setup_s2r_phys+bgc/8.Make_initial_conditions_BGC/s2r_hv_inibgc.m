@@ -289,12 +289,12 @@ BRYtime.mdays = [31 28 31 30 31 30 31 31 30 31 30 31] ;
     ncwrite(ininame,BGC_INI.bgc_tracer{trc},permute(lon*0,[2 1]),[1 1 1])
    end
 
-   [C,trc]=find(ismember(BGC_INI.bgc_tracer,'DIC')==1) ;
-   if (C==1)
-       disp('Computing DIC and Alk from surface pCO2')
-       [srf_NTA_vol,srf_dic_vol]=det_sfc_dic_nta(ininame,grdname,chdscd) ;
-       dic_alk_profile(ininame,grdname,chdscd,srf_NTA_vol,srf_dic_vol,-750) ;
-   end
+%   [C,trc]=find(ismember(BGC_INI.bgc_tracer,'DIC')==1) ;
+%   if (C==1)
+%       disp('Computing DIC and Alk from surface pCO2')
+%       %[srf_NTA_vol,srf_dic_vol]=det_sfc_dic_nta(ininame,grdname,chdscd) ;
+%       dic_alk_profile(ininame,grdname,chdscd,srf_NTA_vol,srf_dic_vol,-750) ;
+%   end
 
    vec = strfind(BGC_INI.bgc_frctype,'s') ;
    for trc=1:length(vec)
