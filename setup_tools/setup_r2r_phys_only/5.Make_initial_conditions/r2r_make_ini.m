@@ -52,11 +52,12 @@ function r2r_make_ini(par_grd,par_data,chd_grd, chd_data,   ...
   lonp  = double(ncread(par_grd,'lon_rho')');%/10000;
   latp  = double(ncread(par_grd,'lat_rho')');%/10000;
 
-  [Mpp,Lpp] = size(latp) 
+  [Mpp,Lpp] = size(latp)
   lonp(lonp<0) = lonp(lonp<0) + 360;
 
   display('going delaunay');
- tri_fullpar = delaunay(lonp,latp);
+  %tri_fullpar = delaunay(lonp,latp);
+  tri_fullpar = delaunayTriangulation(lonp(:),latp(:));
 %  tri_fullpar = DelaunayTri([reshape(lonp,Mpp*Lpp,1),reshape(latp,Mpp*Lpp,1)]);
   display('return delaunay');
 
@@ -81,9 +82,9 @@ function r2r_make_ini(par_grd,par_data,chd_grd, chd_data,   ...
    for domy = 1:ndomy
      [ domx domy]
 
-      icb = icmin(domx); 
+      icb = icmin(domx);
       ice = icmax(domx);
-      jcb = jcmin(domy); 
+      jcb = jcmin(domy);
       jce = jcmax(domy);
 
     % Get topography data from childgrid
@@ -109,19 +110,33 @@ function r2r_make_ini(par_grd,par_data,chd_grd, chd_data,   ...
 %     error 'testing'
 
     % Compute minimal subgrid extracted from full parent grid
-    t = squeeze(tsearch(lonp,latp,tri_fullpar,lonc,latc));
+    %t = squeeze(tsearch(lonp,latp,tri_fullpar,lonc,latc));
+
+
+ [Mc,Lc] = size(lonc)
+
+  xp = lonp; yp = latp;
+  xc = lonc; yc = latc;
+
+  Xp    = [reshape(xp,Mpp*Lpp,1) reshape(yp,Mpp*Lpp,1) ];
+  Xc    = [reshape(xc,Mc*Lc,1) reshape(yc,Mc*Lc,1) ];
+
+  ID = pointLocation(tri_fullpar,Xc);   % ID
+
+
 %       [nyc,nxc] = size(lonc);
 %       t   = squeeze(pointLocation(tri_fullpar,reshape(lonc,nxc*nyc,1),reshape(latc,nxc*nyc,1)));
 %       sum(isnan(t))
 
     % Deal with child points that are outside parent grid (those points should be masked!)
       if (length(t(~isfinite(t)))>0);
-       disp('Warning in new_bry_subgrid: outside point(s) detected.');
-       [lonc,latc] = fix_outside_child(lonc,latc,t);
-       t = squeeze(tsearch(lonp,latp,tri_fullpar,lonc,latc));
+       disp('ERROR in new_bry_subgrid: outside point(s) detected. Aborting.');
+       return;
+       %[lonc,latc] = fix_outside_child(lonc,latc,t);
+       %t = squeeze(tsearch(lonp,latp,tri_fullpar,lonc,latc));
 %       t = squeeze(pointLocation(tri_fullpar,reshape(double(lonc),nxc*nyc,1),reshape(double(latc),nxc*nyc,1)));
       end;
-      index       = tri_fullpar(t,:);
+      index       = tri_fullpar(ID,:);  %t
       [idxj,idxi] = ind2sub([Mpp Lpp], index);
 
       imin = min(min(idxi));% imin = max(1,imin-1);
@@ -145,7 +160,7 @@ function r2r_make_ini(par_grd,par_data,chd_grd, chd_data,   ...
         masks(isnan(masks))=0;
         disp('You probably have land masking defined in cppdefs.h...')
       end
-% 
+%
 %       figure
 %       plot(lons,lats,'.k')
 %       hold on
@@ -275,7 +290,7 @@ function r2r_make_ini(par_grd,par_data,chd_grd, chd_data,   ...
         vs(k,:,:) = squeeze(vd(k,:,:)).*cosc - squeeze(ud(k,:,:)).*sinc;
       end
     % Back to staggered locations
-      u = 0.5*(us(:,:,1:Lc-1) + us(:,:,2:Lc)); 
+      u = 0.5*(us(:,:,1:Lc-1) + us(:,:,2:Lc));
       v = 0.5*(vs(:,1:Mc-1,:) + vs(:,2:Mc,:));
     % w back to staggered w points
       if 0
@@ -302,7 +317,7 @@ function r2r_make_ini(par_grd,par_data,chd_grd, chd_data,   ...
         u(k,:,:)        = squeeze(u(k,:,:)).*umask;
         v(k,:,:)        = squeeze(v(k,:,:)).*vmask;
       end
-      
+
       disp(' Writing ini file')
       ini_temp = permute(ini_temp,[3 2 1]);
       ncwrite(chd_data,'temp'  ,ini_temp,[icb jcb 1 1]);
