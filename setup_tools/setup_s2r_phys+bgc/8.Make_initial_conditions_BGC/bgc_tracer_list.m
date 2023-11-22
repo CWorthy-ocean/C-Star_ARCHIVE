@@ -11,7 +11,7 @@
         {'Fe'         ,'Iron'                                             ,'mMol Fe m-3'    }
         {'O2'         ,'Oxygen'                                           ,'mMol O2 m-3'    }
         {'DIC'        ,'Dissolved inorganic carbon'                       ,'mMol C m-3'     }
-        {'Alk'        ,'Alkalinity'                                       ,'mmol m-3'       }
+        {'Alk'        ,'Alkalinity'                                       ,'mMol m-3'       }
         {'DOC'        ,'Dissolved organic carbon'                         ,'mMol C m-3'     }
         {'DON'        ,'Dissolved organic nitrogen'                       ,'mMol N m-3'     }
         {'DOFE'       ,'Dissolved organic iron'                           ,'mMol Fe m-3'    }

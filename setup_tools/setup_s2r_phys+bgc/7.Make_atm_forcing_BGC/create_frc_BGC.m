@@ -1,7 +1,7 @@
 function create_frc_BGC(gridfile,frcfile,coarse_frc,vars)
 %
 %   Create ROMS bulk forcing file
-% 
+%
 %
 if coarse_frc
   [nx,ny] = size(ncread(gridfile,'h_coarse'));
@@ -29,7 +29,7 @@ ncwriteatt(frcfile,'dust_time','cycle_length',365.25);
 
 nccreate(frcfile,'dust','Dimensions',{'xi_rho',nx,'eta_rho',ny,'time',12},'datatype','single');
 ncwriteatt(frcfile,'dust','long_name','dust deposition');
-ncwriteatt(frcfile,'dust','units','nmol/cm2/s');
+ncwriteatt(frcfile,'dust','units','kg/m2/s');
 
 elseif strcmp(vars,'iron')
 
@@ -42,7 +42,7 @@ nccreate(frcfile,'iron','Dimensions',{'xi_rho',nx,'eta_rho',ny,'time',12},'datat
 ncwriteatt(frcfile,'iron','long_name','iron deposition');
 ncwriteatt(frcfile,'iron','units','nmol/cm2/s');
 
-else 
+else
 
 disp('STOP : unable to create this variable')
 STOP
