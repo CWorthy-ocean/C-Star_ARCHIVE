@@ -25,8 +25,8 @@ disp(' ')
 %
 %   Parent...
 %
-     parscd.file    = '/glade/scratch/bachman/UCLA-ROMS/run/CT0_2019-2020/CT0_rst.20190201120000.nc';
-     pargrd = '/glade/scratch/bachman/UCLA-ROMS/Work/CT/CT0/INPUT/2019-2020/CT0_grd.nc' ;
+     parscd.file    = '/glade/derecho/scratch/bachman/UCLA-ROMS/run/CT1_2019-2020/HOLD_RST/CT1_rst.20190301120000.nc';
+     pargrd = '/glade/derecho/scratch/bachman/UCLA-ROMS/Work/CT/CT1/INPUT/2019-2020/CT1_grd.nc' ;
      parscd.N       = 100 ;
      parscd.theta_s = 5.0;
      parscd.theta_b = 2.0;
@@ -35,9 +35,9 @@ disp(' ')
      parscd.scoord = 'new2012';    % child 'new' or 'old' type scoord
 
 %%%%% child
-    romsdir    = '/glade/scratch/bachman/ROMS_tools/setup_r2r_phys_only/1.Make_grid/';
-    chdgrd    = [romsdir 'CT1_grd.nc'];
-    chdini    = [romsdir 'CT1_ini.nc'];
+    romsdir    = '/glade/cheyenne/scratch/bachman/C-Star/setup_tools/setup_r2r_phys_only/1.Make_grid/';
+    chdgrd    = [romsdir 'CT2_grd.nc'];
+    chdini    = [romsdir 'CT2_ini.nc'];
     chdscd.theta_s = 5.0;
     chdscd.theta_b = 2.0;
     chdscd.hc     = 300.0;

@@ -56,7 +56,8 @@ function r2r_make_ini(par_grd,par_data,chd_grd, chd_data,   ...
   lonp(lonp<0) = lonp(lonp<0) + 360;
 
   display('going delaunay');
- tri_fullpar = delaunay(lonp,latp);
+% tri_fullpar = delaunay(lonp,latp);
+  tri_fullpar = delaunayTriangulation(lonp(:),latp(:));
 %  tri_fullpar = DelaunayTri([reshape(lonp,Mpp*Lpp,1),reshape(latp,Mpp*Lpp,1)]);
   display('return delaunay');
 
@@ -109,19 +110,34 @@ function r2r_make_ini(par_grd,par_data,chd_grd, chd_data,   ...
 %     error 'testing'
 
     % Compute minimal subgrid extracted from full parent grid
-    t = squeeze(tsearch(lonp,latp,tri_fullpar,lonc,latc));
+%    t = squeeze(tsearch(lonp,latp,tri_fullpar,lonc,latc));
 %       [nyc,nxc] = size(lonc);
 %       t   = squeeze(pointLocation(tri_fullpar,reshape(lonc,nxc*nyc,1),reshape(latc,nxc*nyc,1)));
 %       sum(isnan(t))
 
+ [Mc,Lc] = size(lonc)
+
+  xp = lonp; yp = latp;
+  xc = lonc; yc = latc;
+
+  Xp    = [reshape(xp,Mpp*Lpp,1) reshape(yp,Mpp*Lpp,1) ];
+  Xc    = [reshape(xc,Mc*Lc,1) reshape(yc,Mc*Lc,1) ];
+
+  ID = pointLocation(tri_fullpar,Xc);   % ID
+
+
+
     % Deal with child points that are outside parent grid (those points should be masked!)
       if (length(t(~isfinite(t)))>0);
-       disp('Warning in new_bry_subgrid: outside point(s) detected.');
-       [lonc,latc] = fix_outside_child(lonc,latc,t);
-       t = squeeze(tsearch(lonp,latp,tri_fullpar,lonc,latc));
+%       disp('Warning in new_bry_subgrid: outside point(s) detected.');
+%       [lonc,latc] = fix_outside_child(lonc,latc,t);
+%       t = squeeze(tsearch(lonp,latp,tri_fullpar,lonc,latc));
+       disp('ERROR in new_bry_subgrid: outside point(s) detected. Aborting.');
+       return;
 %       t = squeeze(pointLocation(tri_fullpar,reshape(double(lonc),nxc*nyc,1),reshape(double(latc),nxc*nyc,1)));
       end;
-      index       = tri_fullpar(t,:);
+      %index       = tri_fullpar(t,:);
+      index       = tri_fullpar(ID,:);
       [idxj,idxi] = ind2sub([Mpp Lpp], index);
 
       imin = min(min(idxi));% imin = max(1,imin-1);
