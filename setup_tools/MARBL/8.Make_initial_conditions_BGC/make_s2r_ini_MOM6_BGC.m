@@ -26,6 +26,8 @@ disp(' ')
     grdname    = [romsdir 'Iceland0_grd.nc'];
     ininame    = [romsdir 'Iceland0_ini_bgc.nc'];
 
+    phys_ininame = [romsdir 'Iceland0_ini.nc'];
+
     %%%%% ref %%%%%
     pars.theta_s = 5.0;
     pars.theta_b = 2.0;
@@ -114,7 +116,7 @@ disp(' ')
 %---------------------------------------------------------------------------------------
 
     disp(['Creating initial file: ' ininame]);
-    create_ini(ininame,grdname,pars.N,pars,BGC_INI,bgctracers_list);
+    create_ini(phys_ininame,ininame,grdname,pars.N,pars,BGC_INI,bgctracers_list);
 
     s2r_hv_inibgc(BGC_INI,grdname,ininame,pars)
 

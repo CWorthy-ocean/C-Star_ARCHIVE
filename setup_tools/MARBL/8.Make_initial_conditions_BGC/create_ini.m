@@ -1,4 +1,4 @@
-function create_ini(inifile,gridfile,N,chdscd,BGC_INI,bgctracers_list)
+function create_ini(phys_inifile,inifile,gridfile,N,chdscd,BGC_INI,bgctracers_list)
 
 %  Read the grid file
 
@@ -57,7 +57,8 @@ ncwrite(inifile,'theta_s',chdscd.theta_s);
 ncwrite(inifile,'theta_b',chdscd.theta_b);
 ncwrite(inifile,'Tcline',chdscd.hc);
 ncwrite(inifile,'hc',chdscd.hc);
-ncwrite(inifile,'ocean_time',1.0*24*3600);
+phys_time = ncread(phys_inifile,'ocean_time')';
+ncwrite(inifile,'ocean_time',phys_time);
 
 [sc_r,Cs_r] = sigma_stretch(chdscd.theta_s,chdscd.theta_b,N,'r',3);
 disp('WARNING : writting sigma stretch sc and Cs')
