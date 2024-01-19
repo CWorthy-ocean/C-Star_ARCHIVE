@@ -109,6 +109,7 @@ function s2r_hv_glorys(soda_mon_tr,soda_mon_vel,soda_mon_ssh,grdname,bryname,mon
   lat1 = max(lat(:));
 
   loni = ncread(soda_mon_data,'longitude');
+  loni(loni<=0) = loni(loni<=0)+360;
   lati = ncread(soda_mon_data,'latitude');
 
   %%%%%%%%%%%
