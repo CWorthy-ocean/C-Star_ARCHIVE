@@ -12,6 +12,7 @@ function [u,v,temp,salt,ssh,zi,loni,lati] = get_glorys_data(soda_mon_tr,soda_mon
   lat1 = max(lat(:));
 
   loni = ncread(soda_mon_data,'longitude');
+  loni(loni<=0) = loni(loni<=0)+360;
   lati = ncread(soda_mon_data,'latitude');
 
   %%%%%%%%%%%
@@ -110,7 +111,7 @@ function [u,v,temp,salt,ssh,zi,loni,lati] = get_glorys_data(soda_mon_tr,soda_mon
 
 %%%%%%%%%%%%%%%%%%%%%%%
 
-  temp(isnan(temp))=0;  
+  temp(isnan(temp))=0;
   salt(isnan(salt))=0;
   u(isnan(u))=0;
   v(isnan(v))=0;
