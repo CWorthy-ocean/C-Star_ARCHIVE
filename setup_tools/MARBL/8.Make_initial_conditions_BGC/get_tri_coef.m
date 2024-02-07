@@ -17,13 +17,13 @@ function [elem,coef,nnel] = get_tri_coef(lonp,latp,lonc,latc,maskp)
 %          griddata calls. Since it avoids repeated triangulations and tsearches (that are done
 %          with every call to griddata) it should be much faster.
 %
-%   (c) 2007, Jeroen Molemaker, UCLA 
+%   (c) 2007, Jeroen Molemaker, UCLA
 
  gnomonic_option = 0 ;
  [Mp,Lp] = size(lonp);
  [Mc,Lc] = size(lonc);
 
- 
+
 %
 %%  Project lon, lat with a gnomonic projection for accurate distances.
 %
@@ -46,18 +46,24 @@ function [elem,coef,nnel] = get_tri_coef(lonp,latp,lonc,latc,maskp)
   Xp    = [reshape(xp,Mp*Lp,1) reshape(yp,Mp*Lp,1) ];
   Xc    = [reshape(xc,Mc*Lc,1) reshape(yc,Mc*Lc,1) ];
 
-  tri     = delaunay(xp(:),yp(:));
-  [tn,pn] = tsearchn(Xp,tri,Xc);
+%  tri     = delaunay(xp(:),yp(:));
+%  [tn,pn] = tsearchn(Xp,tri,Xc);
+%
+%% Fix to deal with child points that are outside parent grid (those points should be masked!)
+%  if (length(tn(~isfinite(tn)))>0);
+%    disp('Warning in get_tri_coef: outside point(s) detected.');
+%    [xc,yc] = fix_outside_child(xc,yc,tn);
+%    Xc      = [reshape(xc,Mc*Lc,1) reshape(yc,Mc*Lc,1) ];
+%    [tn,pn] = tsearchn(Xp,tri,Xc);
+%  end;
+%
+%  elem = reshape(tri(tn,:),Mc,Lc,3);
+%  coef = reshape(       pn,Mc,Lc,3);
 
-% Fix to deal with child points that are outside parent grid (those points should be masked!)
-  if (length(tn(~isfinite(tn)))>0);
-    disp('Warning in get_tri_coef: outside point(s) detected.');
-    [xc,yc] = fix_outside_child(xc,yc,tn);
-    Xc      = [reshape(xc,Mc*Lc,1) reshape(yc,Mc*Lc,1) ];
-    [tn,pn] = tsearchn(Xp,tri,Xc);
-  end;
-
-  elem = reshape(tri(tn,:),Mc,Lc,3);
+  tri_fullpar = delaunayTriangulation(lonp(:),latp(:));
+  [ID,pn] = pointLocation(tri_fullpar,Xc);
+  tn      = tri_fullpar(ID,:);
+  elem = reshape(tn,Mc,Lc,3);
   coef = reshape(       pn,Mc,Lc,3);
 
   xpm = xp;
