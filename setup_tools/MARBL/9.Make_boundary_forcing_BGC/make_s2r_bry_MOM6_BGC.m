@@ -26,15 +26,15 @@ disp(' ')
    f_end = 12;
 
    %  Data climatology file names:
-   src_dir = '/glade/derecho/scratch/mlevy/archive/g.e23b15.TL319_t061.G1850MOMMARBL_JRA.012/ocn/hist/';
+   src_dir = '/glade/derecho/scratch/dafydd/ucla-roms/ROMS_INPUT/';
    src = [src_dir,'g.e23b15.TL319_t061.G1850MOMMARBL_JRA.012.mom6.h.bgc.*.nc'];
    src_files  = dir(src) ;
    src_files = src_files(f_start:f_end);
 
 
     % ROMS info
-     romsdir    = '/glade/cheyenne/scratch/dafydd/ucla-roms/run/roms_marbl_BATS/ROMS_tools/1.Make_grid/';
-     outdir = '/glade/cheyenne/scratch/bachman/C-Star/setup_tools/MARBL/9.Make_boundary_forcing_BGC/';
+     romsdir    = '../1.Make_grid/';
+     outdir = '../1.Make_grid/';
      grdname    = [romsdir 'roms_grd.nc'];
      bryname    = [outdir 'roms_bryBGC.nc'];
 
@@ -104,4 +104,4 @@ disp(' ')
 
 
 
-
+correction_on_BRYtime;

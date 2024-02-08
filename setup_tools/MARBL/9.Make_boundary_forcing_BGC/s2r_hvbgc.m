@@ -80,7 +80,7 @@ for trc=1:length(BGC_INI.bgc_tracer)
   for t = 1:length(BRYtime.source)
 
 
-    [var,zi,loni,lati] = get_MOM_data(BRYtime.source{t},BGC_INI.bgc_tracer{trc},lon,lat);
+    [var,zi,loni,lati] = get_MOM_BC_data(BRYtime.source{t},BGC_INI.bgc_tracer{trc},lon,lat);
     input_var_name{trc} = BGC_INI.bgc_tracer{trc};
 
     tic
