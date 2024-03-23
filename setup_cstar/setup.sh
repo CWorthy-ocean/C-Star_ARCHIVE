@@ -66,7 +66,16 @@ case "$1" in
 	;;
     
     sdsc_expanse_intel)
-	echo "compiling on SDSC Expanse"
+	if [ "$LMOD_SYSHOST" != "expanse" ];then
+	    echo "You do not appear to be on the SDSC Expanse system.
+	    If you believe you are reading this message in error, please raise an issue:
+	    https://github.com/CWorthy-ocean/C-Star/issues/new
+	    Exiting setup
+	    "
+	    exit 1
+	else
+	    echo "compiling on SDSC Expanse"
+	fi
 	#1. Set up environment
 
 	# Set up within this script
