@@ -20,6 +20,7 @@ export ROMS_ROOT=$(pwd)/externals/ucla-roms/
 export MARBL_ROOT=$(pwd)/externals/MARBL/
 
 export PATH=$PATH:$ROMS_ROOT/Tools-Roms
+export PATH="$(pwd):$PATH" # Add C-Star/setup_cstar dir to path
 
 # - set roms' environment variables to match expanse module paths:
 # 1 - ucla-roms compilation
