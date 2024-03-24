@@ -99,10 +99,13 @@ case "$1" in
 	    echo "compiling on SDSC Expanse"
 	fi
 	#1. Set up environment
+	ROMS_ROOT="(pwd)/externals/ucla-roms/"
+	if ! grep -q "export ROMS_ROOT=${ROMS_ROOT}" machine_specific_files/sdsc_expanse/expanse_environment.sh; then
+	    echo "export ROMS_ROOT=${ROMS_ROOT}"                  >> machine_specific_files/sdsc_expanse/expanse_environment.sh
+	    echo "export MARBL_ROOT=$(pwd)/externals/MARBL/"      >> machine_specific_files/sdsc_expanse/expanse_environment.sh
+	    echo 'export PATH=$PATH:${ROMS_ROOT}/Tools-Roms'      >> machine_specific_files/sdsc_expanse/expanse_environment.sh
+	fi
 	source machine_specific_files/sdsc_expanse/expanse_environment.sh
-
-	#ROMS_ROOT=$(pwd)/externals/ucla-roms/
-	#MARBL_ROOT=$(pwd)/externals/MARBL/
 
 	# Alias command to go in bashrc for future environment activation
 	CSTAR_ENV_ALIAS=\'"source $(pwd)/machine_specific_files/sdsc_expanse/expanse_environment.sh"\'
@@ -118,6 +121,36 @@ case "$1" in
     
     sdsc_expanse_gnu)
 	echo "https://www.youtube.com/watch?v=ogwouE_Msd4"
+	;;
+    ncar_derecho_intel)
+	if [ "$LMOD_SYSTEM_NAME" != "derecho" ];then
+	    echo "You do not appear to be on the NCAR Derecho system.
+	    If you believe you are reading this message in error, please raise an issue:
+	    https://github.com/CWorthy-ocean/C-Star/issues/new
+	    Exiting setup
+	    "
+	    exit 1
+	else
+	    echo "compiling on NCAR Derecho"
+	fi
+	#1. Set up environment
+	if ! grep -q "export ROMS_ROOT=${ROMS_ROOT}" machine_specific_files/ncar_derecho/derecho_environment.sh; then	
+	    echo "export ROMS_ROOT=$(pwd)/externals/ucla-roms/" >> machine_specific_files/ncar_derecho/derecho_environment.sh
+	    echo "export MARBL_ROOT=$(pwd)/externals/MARBL/"    >> machine_specific_files/ncar_derecho/derecho_environment.sh
+	    echo 'export PATH=$PATH:$ROMS_ROOT/Tools-Roms'      >> machine_specific_files/ncar_derecho/derecho_environment.sh
+	fi
+	source machine_specific_files/ncar_derecho/derecho_environment.sh
+
+	# Alias command to go in bashrc for future environment activation
+	CSTAR_ENV_ALIAS=\'"source $(pwd)/machine_specific_files/ncar_derecho/derecho_environment.sh"\'
+
+	# 2. Set target for MARBL compilation
+	MARBL_TARGET=intel
+
+	# 2. CHECKOUT EXTERNALS
+	echo "getting external packages as specified in Externals.cfg"
+	./manage_externals/checkout_externals
+	
 	;;
    
 esac
@@ -146,26 +179,30 @@ make
 echo $ROMS_ROOT
 
 # 4. Establish access to the C-Star environment in future
-SHRC="~/.${SHELL##*/}rc" # .bashrc or .zshrc on OSX
+SHRC="${HOME}/.${SHELL##*/}rc" # .bashrc or .zshrc on OSX
 echo "All compilation steps successful!!" 
 if ! grep -q "${CSTAR_ENV_ALIAS}" ${SHRC}; then
     read -p \
-	 "This setup script will now modify your ${SHRC} file to enable an environment for running C-Star.
-      	 By default, an alias (cstar_env) will be added so that you can quickly set the environment up. Continue? (y/n)" \
+	 "
+	 This setup script will now modify your ${SHRC} file to enable an environment for running C-Star.
+      	 By default, an alias (cstar_env) will be added so that you can quickly set the environment up. Continue? (y/n)
+	 " \
 	 continuestring
     
     case ${continuestring} in
 	y|Y)
-	    echo "#SET UP ENVIRONMENT FOR RUNNING C-STAR:" >> ${SHRC}
-	    echo "################################################################################" >> ${SHRC}
-	    echo "alias cstar_env=${CSTAR_ENV_ALIAS}" >> ${SHRC}
-	    echo "################################################################################" >> ${SHRC}
-	    
+	    echo "#SET UP ENVIRONMENT FOR RUNNING C-STAR:" >> "${SHRC}"
+	    echo "################################################################################" >> "${SHRC}"
+	    echo "alias cstar_env=${CSTAR_ENV_ALIAS}" >> "${SHRC}"
+	    echo "################################################################################" >> "${SHRC}"
+
+	    echo "--------------------------------------------------------------------------------"
 	    echo "Your ${SHRC} file has been modified. In future, enter "
 	    echo "cstar_env"
 	    echo " to activate the environment for running C-Star."
 	    echo "NOTE: This will not work until you either log back in or run"
 	    echo "source ${SHRC}"
+	    echo "--------------------------------------------------------------------------------"
 	    ;;
 	*)
 	    echo "Your ${SHRC} file has not been modified. You will need to manually activate the C-Star environment using"

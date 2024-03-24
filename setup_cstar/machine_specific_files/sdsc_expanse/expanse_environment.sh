@@ -16,10 +16,6 @@ module load netcdf-fortran/4.5.3
 module load ncview/2.1.8
 ################################################################################
 # ENVIRONMENT
-export ROMS_ROOT=$(pwd)/externals/ucla-roms/
-export MARBL_ROOT=$(pwd)/externals/MARBL/
-
-export PATH=$PATH:$ROMS_ROOT/Tools-Roms
 export PATH="$(pwd):$PATH" # Add C-Star/setup_cstar dir to path
 
 # - set roms' environment variables to match expanse module paths:
@@ -31,3 +27,4 @@ export NETCDF=$NETCDF_FORTRANHOME
 export MPI_ROOT=$MVAPICH2HOME
 
 ################################################################################
+# setup_cstar will append absolute paths for ROMS_ROOT and MARBL_ROOT here:
