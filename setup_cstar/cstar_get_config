@@ -25,11 +25,6 @@ fi
 
 case "$1" in
     roms_marbl_example)
-	shopt -s expand_aliases
-	#cat ${HOME}/.${SHELL##*/}rc
-	#source ${HOME}/.${SHELL##*/}rc
-	
-	cstar_env
 	configdir=${CSTAR_ROOT}/configurations/roms_marbl_example
 	# Download ROMS source code:
 	git clone https://github.com/dafyddstephenson/roms_marbl_example.git ${configdir}
