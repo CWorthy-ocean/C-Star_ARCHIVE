@@ -141,6 +141,7 @@ case "$1" in
 	    echo "compiling on NCAR Derecho"
 	fi
 	#1. Set up environment
+	ROMS_ROOT="$(pwd)/externals/ucla-roms/"
 	cp machine_specific_files/ncar_derecho/derecho_environment.sh "$HOME/.CSTAR"
 	if ! grep -q "export ROMS_ROOT=${ROMS_ROOT}" "${HOME}/.CSTAR";then
 	    echo "export ROMS_ROOT=${ROMS_ROOT}"                        >> "$HOME/.CSTAR"
