@@ -28,7 +28,7 @@ case "$1" in
 	configdir=${CSTAR_ROOT}/configurations/roms_marbl_example
 	# Download ROMS source code:
 	git clone https://github.com/dafyddstephenson/roms_marbl_example.git ${configdir}
-	git -C ${CSTAR_ROOT}/configurations/roms_marbl_example checkout --quiet roms_latest
+	#git -C ${CSTAR_ROOT}/configurations/roms_marbl_example checkout --quiet roms_latest
 
 	# Compile
 	cd ${configdir}/code
