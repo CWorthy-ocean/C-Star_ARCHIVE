@@ -52,7 +52,7 @@ case "$1" in
 	     echo "conda env remove -p $(pwd)/conda_envs/cstar_gnu"
 	     echo "and try running this script again"
 	else
-	    cstarenv="$(pwd)/conda_envs/cstar_gnu"
+	    cstarenv="$(pwd)/conda_envs/cstar_gnu/"
 	    conda env create -f conda_envs/cstar_gnu.yml --prefix="${cstarenv}"
 	    
 	    source $(conda info --base)/etc/profile.d/conda.sh
