@@ -35,6 +35,7 @@ case "$1" in
 	cp ${ROMS_ROOT}/Examples/Makefile .
 	make
 	if [ -L input_data ];then rm input_data;fi
+	cd ${configdir}; ln -s code/roms .
 	echo "--------------------------------------------------------------------------------"
 	echo "$1 download and compile complete. See "
 	echo "${CSTAR_ROOT}/configurations/roms_marbl_example/README.md"
