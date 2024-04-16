@@ -25,7 +25,7 @@ fi
 
 case "$1" in
     roms_marbl_example)
-	configdir=${CSTAR_ROOT}/configurations/roms_marbl_example
+	configdir=${CSTAR_ROOT}/blueprints/roms_marbl_example
 	# Download ROMS source code:
 	git clone https://github.com/dafyddstephenson/roms_marbl_example.git ${configdir}
 	#git -C ${CSTAR_ROOT}/configurations/roms_marbl_example checkout --quiet roms_latest

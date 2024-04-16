@@ -5,7 +5,7 @@ set -e
 # This program will acquire the necessary codebases, create an environment for
 # your machine, and set up libraries necessary to run
 
-# To set up a specific configuration, use the cstar_get_config script
+# To set up a specific blueprint, use the cstar_get_blueprint script
 #--------------------------------------------------------------------------------
 if [[ "$#" -eq 0 || "$1" == "-h" || "$1" == "--help" ]];then    
     echo "
@@ -17,7 +17,7 @@ if [[ "$#" -eq 0 || "$1" == "-h" || "$1" == "--help" ]];then
 
 		After successful setup:
 		      - activate the C-Sar environment at any time using 'cstar_env'
-      		      - Run 'cstar_get_config' to obtain specific instances of C-Star
+      		      - Run 'cstar_get_blueprint' to obtain specific instances of C-Star
 		
 	
       	Options:
