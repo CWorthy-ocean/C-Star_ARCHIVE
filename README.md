@@ -7,9 +7,9 @@ Computational Systems for Tracking Ocean Carbon
 - The setup script will obtain and compile any external code, and also make an environment on your machine to use when running C-Star in future. To activate this environment, run the command `cstar_env` after completing the setup (note you will have to restart your shell).
 
 ### Obtaining C-Star configurations
-- With the C-Star environment active (see above), use the command `cstar_get_config` to obtain and compile a C-Star configuration. For a list of available configurations, run `cstar_get_config --help`.
-- C-Star configurations are saved to `${CSTAR_ROOT}/configurations`
-- For help with a specific configuration, see its README file (e.g. `${CSTAR_ROOT}/configurations/roms_marbl_example/README.md`)
+- With the C-Star environment active (see above), use the command `cstar_get_blueprint` to obtain and compile a C-Star blueprint. For a list of available blueprint, run `cstar_get_blueprint --help`.
+- C-Star blueprints are saved to `${CSTAR_ROOT}/blueprints`
+- For help with a specific blueprint, see its README file (e.g. `${CSTAR_ROOT}/blueprints/roms_marbl_example/README.md`)
 
 
 ## See Also
