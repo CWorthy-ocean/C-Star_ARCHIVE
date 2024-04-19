@@ -24,14 +24,16 @@ if [[ "$#" -eq 0 || "$1" == "-h" || "$1" == "--help" ]];then
 	-h, --help : Display this help message
 
 	target_machine : 
-		osx_arm64_gnu      : Install C-Star on an (M2) Mac with Apple Silicon (ARM64 architecture)
+		osx_arm64_gnu          : Install C-Star on an (M2) Mac with Apple Silicon (ARM64 architecture)
 		                      using GNU toolchain via Conda
-		sdsc_expanse_intel : Install C-Star on SDSC's Expanse HPC using Intel toolchain
+		sdsc_expanse_intel     : Install C-Star on SDSC's Expanse HPC using Intel toolchain
 				      via Environment Modules
-		sdsc_expanse_gnu   : Install C-Star on SDSC's Expanse HPC using GNU toolchain
+		sdsc_expanse_gnu       : Install C-Star on SDSC's Expanse HPC using GNU toolchain
 				      via Environment Modules
-		ncar_derecho_intel : Install C-Star on NCAR's Derecho HPC using Intel toolchain
-
+		ncar_derecho_intel     : Install C-Star on NCAR's Derecho HPC using Intel toolchain	
+				      via Environment Modules
+		nersc_perlmutter_intel : Install C-Star on NERSC's perlmutter HPC using Intel toolchain
+				      via Environment Modules
 	"
     exit 0
 fi
@@ -90,19 +92,46 @@ case "$1" in
 	;;
     
     sdsc_expanse_intel)
-	if [ "$LMOD_SYSHOST" != "expanse" ];then
-	    echo "You do not appear to be on the SDSC Expanse system.
+	linux_intel_hpc=true
+	expected_syshost="expanse"
+	env_file=machine_specific_files/sdsc_expanse/expanse_environment.sh
+	;;
+    
+    sdsc_expanse_gnu)
+	echo "https://www.youtube.com/watch?v=ogwouE_Msd4"
+	;;
+    ncar_derecho_intel)
+	linux_intel_hpc=true
+	expected_syshost="derecho"
+	env_file=machine_specific_files/ncar_derecho/derecho_environment.sh
+	;;
+    
+    nersc_perlmutter_intel)
+	linux_intel_hpc=true
+	expected_syshost="perlmutter"
+	env_file=machine_specific_files/nersc_perlmutter/perlmutter_environment.sh
+	;;
+    *)
+	echo "Your machine $1 is not recognized or may not be supported. For a list of supported
+	systems, run ./setup_cstar -h"
+	exit 1
+	;;
+esac
+
+if [ $linux_intel_hpc = true ];then
+    	if [ "$LMOD_SYSHOST" != "$expected_syshost" ];then
+	    echo "You do not appear to be on $expected_syshost.
 	    If you believe you are reading this message in error, please raise an issue:
 	    https://github.com/CWorthy-ocean/C-Star/issues/new
 	    Exiting setup
 	    "
 	    exit 1
 	else
-	    echo "compiling on SDSC Expanse"
+	    echo "compiling on $expected_syshost"
 	fi
 	#1. Set up environment
 	ROMS_ROOT="$(pwd)/externals/ucla-roms/"
-	cp machine_specific_files/sdsc_expanse/expanse_environment.sh "$HOME/.CSTAR"
+	cp "$env_file" "$HOME/.CSTAR"
 	if ! grep -q "export ROMS_ROOT=${ROMS_ROOT}" "${HOME}/.CSTAR";then
 	    echo "We are now modifying $HOME/.CSTAR"
 	    echo "export ROMS_ROOT=${ROMS_ROOT}"                        >> "$HOME/.CSTAR"
@@ -112,8 +141,10 @@ case "$1" in
 	    echo 'export PATH=$PATH:${ROMS_ROOT}/Tools-Roms'":$(pwd)"   >> "$HOME/.CSTAR"
 	fi
 	source "${HOME}/.CSTAR"
-	echo $CSTAR_ROOT
-	exit 1
+	echo "nc-config"
+	nc-config --prefix
+	echo "nf-config"
+	nf-config --prefix
 	# Alias command to go in bashrc for future environment activation
 	CSTAR_ENV_ALIAS=\'"source ${HOME}/.CSTAR"\'
 
@@ -124,47 +155,7 @@ case "$1" in
 	echo "getting external packages as specified in Externals.cfg"
 	./manage_externals/checkout_externals
 
-	;;
-    
-    sdsc_expanse_gnu)
-	echo "https://www.youtube.com/watch?v=ogwouE_Msd4"
-	;;
-    ncar_derecho_intel)
-	if [ "$LMOD_SYSTEM_NAME" != "derecho" ];then
-	    echo "You do not appear to be on the NCAR Derecho system.
-	    If you believe you are reading this message in error, please raise an issue:
-	    https://github.com/CWorthy-ocean/C-Star/issues/new
-	    Exiting setup
-	    "
-	    exit 1
-	else
-	    echo "compiling on NCAR Derecho"
-	fi
-	#1. Set up environment
-	ROMS_ROOT="$(pwd)/externals/ucla-roms/"
-	cp machine_specific_files/ncar_derecho/derecho_environment.sh "$HOME/.CSTAR"
-	if ! grep -q "export ROMS_ROOT=${ROMS_ROOT}" "${HOME}/.CSTAR";then
-	    echo "export ROMS_ROOT=${ROMS_ROOT}"                        >> "$HOME/.CSTAR"
-	    echo "export MARBL_ROOT=$(pwd)/externals/MARBL/"            >> "$HOME/.CSTAR"
-	    echo "export CSTAR_ROOT=$(dirname $(pwd))"                  >> "$HOME/.CSTAR" 	    
-	    echo "export CSTAR_SYSTEM=$1"                               >> "$HOME/.CSTAR"
-	    echo 'export PATH=$PATH:${ROMS_ROOT}/Tools-Roms'":$(pwd)"   >> "$HOME/.CSTAR"	    
-	fi
-	source "${HOME}/.CSTAR"
-
-	# Alias command to go in bashrc for future environment activation
-	CSTAR_ENV_ALIAS=\'"source ${HOME}/.CSTAR"\'
-
-	# 2. Set target for MARBL compilation
-	MARBL_TARGET=intel
-
-	# 2. CHECKOUT EXTERNALS
-	echo "getting external packages as specified in Externals.cfg"
-	./manage_externals/checkout_externals
-	
-	;;
-   
-esac
+fi
 
 # UNIVERSAL COMMANDS USING ABOVE CONFIGURED ENVIRONMENTS AND VARIABLES
 ################################################################################
@@ -185,7 +176,8 @@ make nhmg
 ## ii. make Tools-Roms
 cd ${ROMS_ROOT}/Tools-Roms
 echo $PATH
-make 
+# Manually specifying NETCDFF_{LIB,INC} as these are not correctly defined on Perlmutter with nf-config
+make NETCDFF_LIB="-L${NETCDFHOME}/lib -lnetcdff -lnetcdf" NETCDFF_INC="-I${NETCDFHOME}/include"
 echo $ROMS_ROOT
 
 # 4. Establish access to the C-Star environment in future
