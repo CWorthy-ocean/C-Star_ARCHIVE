@@ -32,7 +32,7 @@ case "$1" in
 
 	# Compile
 	cd ${blueprintdir}/code
-	cp ${ROMS_ROOT}/Examples/Makefile .
+	cp ${ROMS_ROOT}/Work/Makefile .
 	if [[ ${CSTAR_SYSTEM} == *"_gnu" ]];then
 	    make COMPILER=gnu
 	else
