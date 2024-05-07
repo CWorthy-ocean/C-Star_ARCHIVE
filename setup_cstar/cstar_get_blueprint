@@ -33,12 +33,16 @@ case "$1" in
 	# Compile
 	cd ${blueprintdir}/code
 	cp ${ROMS_ROOT}/Examples/Makefile .
-	make NETCDFF_LIB="-L${NETCDFHOME}/lib -lnetcdff -lnetcdf" NETCDFF_INC="-I${NETCDFHOME}/include"	
+	if [[ ${CSTAR_SYSTEM} == *"_gnu" ]];then
+	    make COMPILER=gnu
+	else
+	    make
+	fi
 	if [ -L input_data ];then rm input_data;fi
 	cd ${blueprintdir}; ln -s code/roms .
 	echo "--------------------------------------------------------------------------------"
 	echo "$1 download and compile complete. See "
-	echo "${CSTAR_ROOT}/blueprint/roms_marbl_example/README.md"
+	echo "${CSTAR_ROOT}/blueprints/roms_marbl_example/README.md"
 	echo "for instructions on how to run".
 	echo "--------------------------------------------------------------------------------"
 	;;
