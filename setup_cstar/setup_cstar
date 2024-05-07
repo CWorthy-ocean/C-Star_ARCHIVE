@@ -85,8 +85,7 @@ case "$1" in
 	# Alias command to go in .zshrc for future environment activation
  	CSTAR_ENV_ALIAS=\'"conda activate ${cstarenv}"\'
 
-	# 2. Set target for MARBL compilation
-	MARBL_TARGET=gnu
+	compiler=gnu
 	;;
     
     sdsc_expanse_intel)
