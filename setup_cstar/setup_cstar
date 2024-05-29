@@ -34,6 +34,9 @@ if [[ "$#" -eq 0 || "$1" == "-h" || "$1" == "--help" ]];then
 				      via Environment Modules
 		nersc_perlmutter_intel : Install C-Star on NERSC's perlmutter HPC using Intel toolchain
 				      via Environment Modules
+		nersc_perlmutter_gnu : Install C-Star on NERSC's perlmutter HPC using GNU toolchain
+				      via Environment Modules
+
 	"
     exit 0
 fi
@@ -82,35 +85,38 @@ case "$1" in
 	# Alias command to go in .zshrc for future environment activation
  	CSTAR_ENV_ALIAS=\'"conda activate ${cstarenv}"\'
 
-	# 2. Set target for MARBL compilation
-	MARBL_TARGET=gnu
-	
-	# 3. Distribute working ROMS makefiles for osx_arm64
-	ls ${ROMS_ROOT}
-	cd machine_specific_files/osx_arm64
-	rsync -av ROMS_Makefiles/* ${ROMS_ROOT}
+	compiler=gnu
 	;;
     
     sdsc_expanse_intel)
-	linux_intel_hpc=true
+	linux_hpc=true
+	compiler=intel
 	expected_syshost="expanse"
-	env_file=machine_specific_files/sdsc_expanse/expanse_environment.sh
+	env_file=additional_files/sdsc_expanse/expanse_environment.sh
 	;;
     
     sdsc_expanse_gnu)
 	echo "https://www.youtube.com/watch?v=ogwouE_Msd4"
 	;;
     ncar_derecho_intel)
-	linux_intel_hpc=true
+	linux_hpc=true
+	compiler=intel
 	expected_syshost="derecho"
-	env_file=machine_specific_files/ncar_derecho/derecho_environment.sh
+	env_file=additional_files/ncar_derecho/derecho_environment.sh
 	;;
     
     nersc_perlmutter_intel)
-	linux_intel_hpc=true
+	linux_hpc=true
+	compiler=intel
 	expected_syshost="perlmutter"
-	env_file=machine_specific_files/nersc_perlmutter/perlmutter_environment.sh
+	env_file=additional_files/nersc_perlmutter/perlmutter_environment_intel.sh
 	;;
+    nersc_perlmutter_gnu)
+	linux_hpc=true
+	compiler=gnu
+	expected_syshost="perlmutter"
+	env_file=additional_files/nersc_perlmutter/perlmutter_environment_gnu.sh
+	;;    
     *)
 	echo "Your machine $1 is not recognized or may not be supported. For a list of supported
 	systems, run ./setup_cstar -h"
@@ -118,7 +124,7 @@ case "$1" in
 	;;
 esac
 
-if [ $linux_intel_hpc = true ];then
+if [ $linux_hpc = true ];then
     	if [ "$LMOD_SYSHOST" != "$expected_syshost" ];then
 	    echo "You do not appear to be on $expected_syshost.
 	    If you believe you are reading this message in error, please raise an issue:
@@ -148,9 +154,6 @@ if [ $linux_intel_hpc = true ];then
 	# Alias command to go in bashrc for future environment activation
 	CSTAR_ENV_ALIAS=\'"source ${HOME}/.CSTAR"\'
 
-	# 2. Set target for MARBL compilation
-	MARBL_TARGET=intel
-
 	# 2. CHECKOUT EXTERNALS
 	echo "getting external packages as specified in Externals.cfg"
 	./manage_externals/checkout_externals
@@ -163,22 +166,33 @@ fi
 
 # 2. COMPILE MARBL
 cd ${MARBL_ROOT}/src
-sed -i -e "s#USEMPI=FALSE#USEMPI=TRUE#g" Makefile
-
-make "${MARBL_TARGET}"
+make ${compiler} USEMPI=TRUE
 cd ${cstar_setupdir}
 
-# 3. COMPILE ROMS/NHMG and ROMS/TOOLS-ROMS LIBRARIES	
-## i. make NHMG library
-cd ${ROMS_ROOT}/Work
-make nhmg 
+# 3. COMPILE ROMS/NHMG and ROMS/TOOLS-ROMS LIBRARIES
 
-## ii. make Tools-Roms
+# i. Distribute universal ROMS makefiles
+ls ${ROMS_ROOT}
+cd additional_files/
+rsync -av ROMS_Makefiles/* ${ROMS_ROOT}
+mkdir ${ROMS_ROOT}/src/other
+for f in {"check_alfabeta.F","check_rho_eos.F","int_r3d.F","sediment.F","t3dmix_GP.F","transp_nodes.F","u3dbc_new.F","visc3d_GP.F","visc3d_S_FS.F"};do
+    if [ -e "${ROMS_ROOT}/src/${f}" ];then
+	mv "${ROMS_ROOT}/src/${f}" "${ROMS_ROOT}/src/other/${f}"
+    fi
+done
+
+## ii. make NHMG library
+cd ${ROMS_ROOT}/Work
+make COMPILER=${compiler} nhmg 
+
+## iii. make Tools-Roms
 cd ${ROMS_ROOT}/Tools-Roms
-echo $PATH
+make COMPILER=${compiler}
+#echo $PATH
 # Manually specifying NETCDFF_{LIB,INC} as these are not correctly defined on Perlmutter with nf-config
-make NETCDFF_LIB="-L${NETCDFHOME}/lib -lnetcdff -lnetcdf" NETCDFF_INC="-I${NETCDFHOME}/include"
-echo $ROMS_ROOT
+#make NETCDFF_LIB="-L${NETCDFHOME}/lib -lnetcdff -lnetcdf" NETCDFF_INC="-I${NETCDFHOME}/include"
+#echo $ROMS_ROOT
 
 # 4. Establish access to the C-Star environment in future
 SHRC="${HOME}/.${SHELL##*/}rc" # .bashrc or .zshrc on OSX
