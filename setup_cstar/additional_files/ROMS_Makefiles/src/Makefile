@@ -8,7 +8,7 @@ include Makedefs.inc
    SRCS = $(shell ls *$(UPF77_ext))
 
 # Exclude files that are not part of main build
-   EXCL = mpi_test checkkwds cppcheck srcscheck
+   EXCL = mpi_test checkkwds cppcheck srcscheck check_alfabeta check_rho_eos int_r3d sediment t3dmix_GP transp_nodes u3dbc_new visc3d_GP visc3d_S_FS
    EXCL := $(addsuffix $(UPF77_ext), $(EXCL))
    SRCS := $(filter-out $(EXCL), $(SRCS))
 
