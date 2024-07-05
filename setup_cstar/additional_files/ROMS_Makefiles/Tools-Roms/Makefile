@@ -69,7 +69,7 @@ particle_join:
 R2R_INIT = r2r_init r2r_interp_init r2r_subs r2r_rotate r2r_vert_interp\
            set_depth etch_into_land spln2d tiling roms_read_write\
            read_string lenstr
-R2R_INIT ::= $(addsuffix, $(OBJ_ext), $(R2R_INIT))
+R2R_INIT := $(addsuffix, $(OBJ_ext), $(R2R_INIT))
 r2r_init: $(R2R_INIT)
 	$(LDR) $(FFLAGS) $(LDFLAGS) -o r2r_init $(R2R_INIT) $(LCDF)
 
