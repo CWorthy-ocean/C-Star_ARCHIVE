@@ -404,14 +404,14 @@ for formask = 0:1
   figure(2); mypcolor(xg,yg,mask);
   pause(0.01)
 
-%   if formask
+   if formask
      disp('writing mask')
      ncwrite(gridfile,'mask_rho',mask,[gi0 gj0]);
 %    ncg{'mask_rho'}(gi0:gi1,gj0:gj1)= mask;
-%   else
+   else
      disp('writing topo')
      ncwrite(gridfile,'hraw',hraw,[gi0 gj0]);
-%   end
+   end
 
 %  if global_grid
 %   h_glob(gi0:gi1,gj0:gj1) =  hraw;
