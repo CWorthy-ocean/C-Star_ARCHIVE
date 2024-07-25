@@ -27,7 +27,7 @@ case "$1" in
     roms_marbl_example)
 	blueprintdir=${CSTAR_ROOT}/blueprints/roms_marbl_example
 	# Download ROMS source code:
-	git clone https://github.com/dafyddstephenson/roms_marbl_example.git ${blueprintdir}
+	git clone https://github.com/CWorthy-ocean/cstar_blueprint_roms_marbl_example ${blueprintdir}
 	#git -C ${CSTAR_ROOT}/configurations/roms_marbl_example checkout --quiet roms_latest
 
 	# Compile
