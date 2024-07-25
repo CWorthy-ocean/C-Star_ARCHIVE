@@ -1,4 +1,4 @@
-[![codecov](https://codecov.io/github/dafyddstephenson/C-Star/graph/badge.svg?token=Z0L4U76WSG)](https://codecov.io/github/dafyddstephenson/C-Star)
+[![codecov](https://codecov.io/github/dafyddstephenson/C-Star/branch/automated_testing/graph/badge.svg?token=Z0L4U76WSG)](https://codecov.io/github/dafyddstephenson/C-Star)
 # C-Star
 Computational Systems for Tracking Ocean Carbon
 
