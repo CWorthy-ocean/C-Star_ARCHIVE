@@ -1,5 +1,5 @@
-THIS IS A RETIRED REPOSITORY.
-See https://github.com/CWorthy-ocean/C-Star for its successor.
+# THIS IS A RETIRED REPOSITORY.
+# See https://github.com/CWorthy-ocean/C-Star for its successor.
 
 
 [![codecov](https://codecov.io/github/CWorthy-ocean/C-Star/graph/badge.svg?token=EGCZJ22RTC)](https://codecov.io/github/CWorthy-ocean/C-Star)
