@@ -1,9 +1,9 @@
 import os
 import shutil
 import tempfile
-import subprocess
 from typing import Optional, List
 from cstar_ocean.base_model import BaseModel
+from cstar_ocean.utils import _clone_and_checkout
 
 
 class AdditionalCode:
@@ -122,14 +122,11 @@ class AdditionalCode:
             The local path (typically `Case.caseroot`) where the additional code will be curated
         """
         with tempfile.TemporaryDirectory() as tmp_dir:
-            print(f"cloning {self.source_repo} into temporary directory {tmp_dir}")
-            subprocess.run(
-                f"git clone {self.source_repo} {tmp_dir}", check=True, shell=True
+            _clone_and_checkout(
+                source_repo=self.source_repo,
+                local_path=tmp_dir,
+                checkout_target=self.checkout_target,
             )
-            subprocess.run(
-                f"git checkout {self.checkout_target}", cwd=tmp_dir, shell=True
-            )
-            # TODO if checkout fails, this should fail
 
             for file_type in ["source_mods", "namelists"]:
                 file_list = getattr(self, file_type)

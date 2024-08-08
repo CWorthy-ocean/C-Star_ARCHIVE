@@ -14,10 +14,45 @@ def _write_to_config_file(config_file_str):
         )
 
         base_conf_str += "\nimport os\n"
+        base_conf_str += "def set_local_environment():"
         config_file_str = base_conf_str + config_file_str
 
     with open(_CSTAR_CONFIG_FILE, "a") as f:
         f.write(config_file_str)
+
+
+def _clone_and_checkout(
+    source_repo: str, local_path: str, checkout_target: str
+) -> None:
+    """Clone `source_repo` to `local_path` and checkout `checkout_target`."""
+    clone_result = subprocess.run(
+        f"git clone {source_repo} {local_path}",
+        shell=True,
+        capture_output=True,
+        text=True,
+    )
+    if clone_result.returncode != 0:
+        raise RuntimeError(
+            f"Error {clone_result.returncode} when cloning repository "
+            + f"{source_repo} to {local_path}. Error messages: "
+            + f"\n{clone_result.stderr}"
+        )
+    print(f"Cloned repository {source_repo} to {local_path}")
+
+    checkout_result = subprocess.run(
+        f"git checkout {checkout_target}",
+        cwd=local_path,
+        shell=True,
+        capture_output=True,
+        text=True,
+    )
+    if checkout_result.returncode != 0:
+        raise RuntimeError(
+            f"Error {checkout_result.returncode} when checking out "
+            + f"{checkout_target} in git repository {local_path}. Error messages: "
+            + f"\n{checkout_result.stderr}"
+        )
+    print(f"Checked out {checkout_target} in git repository {local_path}")
 
 
 def _get_repo_remote(local_root):

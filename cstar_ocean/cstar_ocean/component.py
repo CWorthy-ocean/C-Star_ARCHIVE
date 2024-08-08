@@ -1,12 +1,20 @@
 import os
 import glob
+import warnings
 import subprocess
 from abc import ABC, abstractmethod
 from typing import List, Optional, Any
 
 from cstar_ocean.utils import _calculate_node_distribution, _replace_text_in_file
 from cstar_ocean.base_model import ROMSBaseModel, BaseModel
-from cstar_ocean.input_dataset import InputDataset
+from cstar_ocean.input_dataset import (
+    InputDataset,
+    InitialConditions,
+    ModelGrid,
+    SurfaceForcing,
+    BoundaryForcing,
+    TidalForcing,
+)
 from cstar_ocean.additional_code import AdditionalCode
 
 from cstar_ocean.environment import (
@@ -69,7 +77,7 @@ class Component(ABC):
             An intialized Component object
         """
 
-        # FIXME: do Type checking here
+        # TODO: do Type checking here
         if "base_model" not in kwargs or not isinstance(
             kwargs["base_model"], BaseModel
         ):
@@ -86,10 +94,14 @@ class Component(ABC):
         )
 
     def __str__(self):
+        # Header
         name = self.__class__.__name__
         base_str = f"{name} object "
         base_str = "-" * (len(name) + 7) + "\n" + base_str
         base_str += "\n" + "-" * (len(name) + 7)
+
+        # Attrs
+        base_str += f"\ntime_step: {self.time_step} seconds"
         base_str += "\nBuilt from: "
 
         NAC = 0 if self.additional_code is None else 1
@@ -107,26 +119,27 @@ class Component(ABC):
         )
 
         base_str += "\n\nDiscretization info:"
-        if hasattr(self,'n_procs_x') and self.n_procs_x is not None:
+        if hasattr(self, "time_step") and self.time_step is not None:
+            base_str += "\ntime_step: " + str(self.time_step)
+        if hasattr(self, "n_procs_x") and self.n_procs_x is not None:
             base_str += (
-                "\nn_procs_x:"
+                "\nn_procs_x: "
                 + str(self.n_procs_x)
                 + " (Number of x-direction processors)"
             )
-        if hasattr(self,'n_procs_y') and self.n_procs_y is not None:
+        if hasattr(self, "n_procs_y") and self.n_procs_y is not None:
             base_str += (
                 "\nn_procs_y:"
                 + str(self.n_procs_y)
                 + " (Number of y-direction processors)"
             )
-        if hasattr(self,'n_levels') and self.n_levels is not None:
+        if hasattr(self, "n_levels") and self.n_levels is not None:
             base_str += "\nn_levels:" + str(self.n_levels)
-        if hasattr(self,'nx') and self.nx is not None:
+        if hasattr(self, "nx") and self.nx is not None:
             base_str += "\nnx:" + str(self.nx)
-        if hasattr(self,'ny') and self.ny is not None:
+        if hasattr(self, "ny") and self.ny is not None:
             base_str += "\nny:" + str(self.ny)
-
-        if hasattr(self,'exe_path') and self.exe_path is not None:
+        if hasattr(self, "exe_path") and self.exe_path is not None:
             base_str += "\n\nIs compiled: True"
             base_str += "\n exe_path: " + self.exe_path
         return base_str
@@ -186,6 +199,8 @@ class ROMSComponent(Component):
     input_datasets: InputDataset or list of InputDatasets
         Any spatiotemporal data needed to run this instance of ROMS
         e.g. initial conditions, surface forcing, etc.
+    time_step: int, Optional, default=1
+        The time step with which to run ROMS in this configuration
     nx,ny,n_levels: int
         The number of x and y points and vertical levels in the domain associated with this object
     n_procs_x,n_procs_y: int
@@ -213,6 +228,7 @@ class ROMSComponent(Component):
         base_model: ROMSBaseModel,
         additional_code: Optional[AdditionalCode] = None,
         input_datasets: Optional[InputDataset | List[InputDataset]] = None,
+        time_step: int = 1,
         nx: Optional[int] = None,
         ny: Optional[int] = None,
         n_levels: Optional[int] = None,
@@ -252,6 +268,7 @@ class ROMSComponent(Component):
             input_datasets=input_datasets,
         )
         # QUESTION: should all these attrs be passed in as a single "discretization" arg of type dict?
+        self.time_step: int = time_step
         self.nx: Optional[int] = nx
         self.ny: Optional[int] = ny
         self.n_levels: Optional[int] = n_levels
@@ -308,19 +325,22 @@ class ROMSComponent(Component):
 
         # Partition input datasets
         if self.input_datasets is not None:
-            datasets_to_partition = (
-                self.input_datasets
-                if isinstance(self.input_datasets, list)
-                else [
+            if isinstance(self.input_datasets, InputDataset):
+                dataset_list = [
                     self.input_datasets,
                 ]
-            )
+            elif isinstance(self.input_datasets, list):
+                dataset_list = self.input_datasets
+            else:
+                dataset_list = []
+
+            datasets_to_partition = [d for d in dataset_list if d.exists_locally]
 
             for f in datasets_to_partition:
                 dspath = f.local_path
                 fname = os.path.basename(f.source)
 
-                os.makedirs(dspath + "/PARTITIONED", exist_ok=True)
+                os.makedirs(os.path.dirname(dspath) + "/PARTITIONED", exist_ok=True)
                 subprocess.run(
                     "partit "
                     + str(self.n_procs_x)
@@ -328,9 +348,38 @@ class ROMSComponent(Component):
                     + str(self.n_procs_y)
                     + " ../"
                     + fname,
-                    cwd=dspath + "PARTITIONED",
+                    cwd=os.path.dirname(dspath) + "/PARTITIONED",
                     shell=True,
                 )
+            # Edit namelist file to contain dataset paths
+            forstr = ""
+            namelist_path = (
+                self.additional_code.local_path
+                + "/"
+                + self.additional_code.namelists[0]
+            )
+            for f in datasets_to_partition:
+                partitioned_path = (
+                    os.path.dirname(f.local_path)
+                    + "/PARTITIONED/"
+                    + os.path.basename(f.local_path)
+                )
+                if isinstance(f, ModelGrid):
+                    gridstr = "     " + partitioned_path + "\n"
+                    _replace_text_in_file(
+                        namelist_path, "__GRID_FILE_PLACEHOLDER__", gridstr
+                    )
+                elif isinstance(f, InitialConditions):
+                    icstr = "     " + partitioned_path + "\n"
+                    _replace_text_in_file(
+                        namelist_path, "__INITIAL_CONDITION_FILE_PLACEHOLDER__", icstr
+                    )
+                elif type(f) in [SurfaceForcing, TidalForcing, BoundaryForcing]:
+                    forstr += "     " + partitioned_path + "\n"
+
+            _replace_text_in_file(
+                namelist_path, "__FORCING_FILES_PLACEHOLDER__", forstr
+            )
 
         ################################################################################
         ## NOTE: we assume that roms.in is the ONLY entry in additional_code.namelists, hence [0]
@@ -346,10 +395,12 @@ class ROMSComponent(Component):
             "MARBL_NAMELIST_DIR",
             self.additional_code.local_path + "/namelists/MARBL",
         )
+
         ################################################################################
 
     def run(
         self,
+        n_time_steps: Optional[int] = None,
         account_key: Optional[str] = None,
         walltime: Optional[str] = _CSTAR_SYSTEM_MAX_WALLTIME,
         job_name: str = "my_roms_run",
@@ -383,14 +434,39 @@ class ROMSComponent(Component):
                 + "\nIf you have already run Component.get(), either run it again or "
                 + " add the local path manually using Component.additional_code.local_path='YOUR/PATH'."
             )
+            return
         else:
             run_path = self.additional_code.local_path + "/output/PARTITIONED/"
 
+        # Add number of timesteps to namelist
+        # Check if n_time_steps is None, indicating it was not explicitly set
+        if n_time_steps is None:
+            n_time_steps = 1
+            warnings.warn(
+                "n_time_steps not explicitly set, using default value of 1. "
+                "Please call ROMSComponent.run() with the n_time_steps argument "
+                "to specify the length of the run.",
+                UserWarning,
+            )
+            assert isinstance(n_time_steps, int)
+
+        if self.additional_code.namelists is None:
+            raise ValueError(
+                "A namelist file (typically roms.in) is needed to run ROMS."
+                " ROMSComponent.additional_code.namelists should be a non-empty list of filenames."
+            )
+
+        _replace_text_in_file(
+            self.additional_code.local_path + "/" + self.additional_code.namelists[0],
+            "__NTIMES_PLACEHOLDER__",
+            str(n_time_steps),
+        )
+
         os.makedirs(run_path, exist_ok=True)
         if self.exe_path is None:
-            # FIXME this only works if build() is called in the same session
-            print(
-                "C-STAR: Unable to find ROMS executable. Run Component.build() first."
+            raise ValueError(
+                "C-STAR: ROMSComponent.exe_path is None; unable to find ROMS executable."
+                + "\nRun Component.build() first. "
                 + "\n If you have already run Component.build(), either run it again or "
                 + " add the executable path manually using Component.exe_path='YOUR/PATH'."
             )
@@ -410,9 +486,9 @@ class ROMSComponent(Component):
                     exec_pfx = "mpirun"
                 case "osx_arm64":
                     exec_pfx = "mpirun"
+                case "linux_x86_64":
+                    exec_pfx = "mpirun"
 
-                # FIXME (probably throughout): self.additional_code /could/ be a list
-                # need to figure out which element to use
             roms_exec_cmd = (
                 f"{exec_pfx} -n {self.n_procs_tot} {self.exe_path} "
                 + f"{self.additional_code.local_path}/{self.additional_code.namelists[0]}"

@@ -1,0 +1,15 @@
+name: cstar_env
+channels:
+  - conda-forge
+dependencies:
+  - python>=3.10
+  - pooch
+  - pyyaml
+  - python-dateutil
+  - coverage
+  - numpy
+  - compilers
+  - netcdf-fortran
+  - mpich
+  - nco
+  - ncview

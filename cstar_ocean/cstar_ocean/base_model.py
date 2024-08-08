@@ -1,9 +1,11 @@
 import os
 import shutil
 import subprocess
+from typing import Optional
 from abc import ABC, abstractmethod
 from cstar_ocean.utils import (
     _get_hash_from_checkout_target,
+    _clone_and_checkout,
     _get_repo_remote,
     _get_repo_head_hash,
     _write_to_config_file,
@@ -58,7 +60,7 @@ class BaseModel(ABC):
         handle_local_config_status() prompts the user to run get() if the model cannot be found.
     """
 
-    def __init__(self, source_repo=None, checkout_target=None):
+    def __init__(self, source_repo=Optional[str], checkout_target=Optional[str]):
         """
         Initialize a BaseModel object manually from a source repository and checkout target.
 
@@ -349,9 +351,13 @@ class ROMSBaseModel(BaseModel):
             the path where ROMS will be cloned and compiled
         """
 
-        # Get the REPO and checkout the right version
-        subprocess.run(f"git clone {self.source_repo} {target}", shell=True)
-        subprocess.run(f"git -C {target} checkout {self.checkout_target}", shell=True)
+        # TODO: Situation where environment variables like ROMS_ROOT are not set...
+        # ... but repo already exists at local_path results in an error rather than a prompt
+        _clone_and_checkout(
+            source_repo=self.source_repo,
+            local_path=target,
+            checkout_target=self.checkout_target,
+        )
 
         # Set environment variables for this session:
         os.environ["ROMS_ROOT"] = target
@@ -359,7 +365,7 @@ class ROMSBaseModel(BaseModel):
 
         # Set the configuration file to be read by __init__.py for future sessions:
         config_file_str = (
-            f'os.environ["ROMS_ROOT"]="{target}"\nos.environ["PATH"]+=":'
+            f'    os.environ["ROMS_ROOT"]="{target}"\n    os.environ["PATH"]+=":'
             + f'{target}/Tools-Roms"\n'
         )
 
@@ -424,17 +430,18 @@ class MARBLBaseModel(BaseModel):
         target: str
             The local path where MARBL will be cloned and compiled
         """
-
-        # FIXME: duplicate code from ROMSBaseModel.get()
-        subprocess.run(f"git clone {self.source_repo} {target}", shell=True)
-        subprocess.run(f"git -C {target} checkout {self.checkout_target}", shell=True)
+        _clone_and_checkout(
+            source_repo=self.source_repo,
+            local_path=target,
+            checkout_target=self.checkout_target,
+        )
 
         # Set environment variables for this session:
         os.environ["MARBL_ROOT"] = target
 
         # Set the configuration file to be read by __init__.py for future sessions:
         # QUESTION: how better to handle this?
-        config_file_str = f'\nos.environ["MARBL_ROOT"]="{target}"\n'
+        config_file_str = f'\n    os.environ["MARBL_ROOT"]="{target}"\n'
         _write_to_config_file(config_file_str)
 
         # Make things

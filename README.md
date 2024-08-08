@@ -1,3 +1,4 @@
+[![codecov](https://codecov.io/github/CWorthy-ocean/C-Star/graph/badge.svg?token=EGCZJ22RTC)](https://codecov.io/github/CWorthy-ocean/C-Star)
 # C-Star
 Computational Systems for Tracking Ocean Carbon
 
